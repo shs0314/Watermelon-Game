@@ -156,6 +156,8 @@ MonoBehaviour:
   fruitGroup: {fileID: 2130885211}
   particlePrefab: {fileID: 3903674727762627263, guid: cb5b13e4e052d5e48b6c5ec8fe27bad4, type: 3}
   particleGroup: {fileID: 1054634945}
+  score: 0
+  isOver: 0
   maxLevel: 0
 --- !u!4 &113845347
 Transform:
@@ -285,9 +287,10 @@ GameObject:
   - component: {fileID: 245654789}
   - component: {fileID: 245654788}
   - component: {fileID: 245654787}
+  - component: {fileID: 245654790}
   m_Layer: 0
   m_Name: Line
-  m_TagString: Untagged
+  m_TagString: Finish
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -385,6 +388,19 @@ Transform:
   m_Father: {fileID: 604730081}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &245654790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245654786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65a1362ae3ea911408fd7c443c6e88f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameManager: {fileID: 113845346}
 --- !u!1 &359462636
 GameObject:
   m_ObjectHideFlags: 0

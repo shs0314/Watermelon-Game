@@ -106,7 +106,7 @@ Rigidbody2D:
   m_GravityScale: 1
   m_Material: {fileID: 0}
   m_Interpolate: 1
-  m_SleepingMode: 1
+  m_SleepingMode: 0
   m_CollisionDetection: 0
   m_Constraints: 0
 --- !u!58 &5196905810223242780
@@ -140,6 +140,9 @@ MonoBehaviour:
   level: 0
   isDrag: 0
   isMerge: 0
+  deadTime: 0
+  gameManager: {fileID: 0}
+  particle: {fileID: 0}
 --- !u!95 &3484591634314229487
 Animator:
   serializedVersion: 5

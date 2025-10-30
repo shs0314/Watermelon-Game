@@ -4,17 +4,35 @@ using UnityEngine;
 public class Fruit : MonoBehaviour
 {
 
-    public int level;
-    public bool isDrag;
-    public bool isMerge;
+    private int level;
+    private bool isDrag;
+    private bool isMerge;
+    private float deadTime;
 
-    public GameManager gameManager;
-    public ParticleSystem particle;
+    private GameManager gameManager;
+    private ParticleSystem particle;
 
     private Animator animator;
     private Rigidbody2D rigidBody;
     private CircleCollider2D circleCollider;
+    private SpriteRenderer spriteRenderer;
 
+    public int Level
+    {
+        get { return level; }
+        set { level = value; }
+    }
+
+    public float DeadTime
+    {
+        get { return deadTime; }
+        set { deadTime = value; }
+    }
+
+    public Rigidbody2D RigidBody { get { return rigidBody; } }
+    public SpriteRenderer SpriteRenderer { get { return spriteRenderer; } }
+    public GameManager GameManager { set { gameManager = value; } }
+    public ParticleSystem Particle { set { particle = value; } }
 
     public void Awake()
     {
@@ -77,46 +95,38 @@ public class Fruit : MonoBehaviour
 
         if (!isTarget) return;
 
+        fruit.isMerge = true;
+        fruit.Hide();
+
         isMerge = true;
-        fruit.Hide(transform.position);
         LevelUp();
     }
 
-    private void Hide(Vector3 targetPosition)
+    public void Hide()
     {
         rigidBody.simulated = false;
         circleCollider.enabled = false;
-
-        isMerge = false;
-        gameObject.SetActive(false);
+        StartCoroutine(HideCoroutine());
     }
 
-/*
-    IEnumerator HideRoutine(Vector3 targetPosition)
+    IEnumerator HideCoroutine()
     {
-        int frameCount = 0;
-        while (frameCount < 20)
-        {
-            frameCount++;
-            transform.position = Vector3.Lerp(transform.position, targetPosition, 0.5f);
-            yield return null;
-        }
-
+        yield return new WaitForSeconds(0.01f);
         isMerge = false;
         gameObject.SetActive(false);
     }
-*/
+
     private void LevelUp()
     {
-        isMerge = true;
-
         rigidBody.velocity = Vector2.zero;
         rigidBody.angularVelocity = 0;
 
-        StartCoroutine(LevelUpRoutine());
+        gameManager.addScoreByFruit(this);
+
+        StartCoroutine(LevelUpCoroutine());
     }
 
-    IEnumerator LevelUpRoutine()
+    IEnumerator LevelUpCoroutine()
     {
         yield return new WaitForSeconds(0.01f);
 
@@ -149,7 +159,8 @@ public class Fruit : MonoBehaviour
     {
         rigidBody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        circleCollider = GetComponent<CircleCollider2D>();  
+        circleCollider = GetComponent<CircleCollider2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private float ClampToBorder(float x)
