@@ -4,35 +4,18 @@ using UnityEngine;
 public class Fruit : MonoBehaviour
 {
 
-    private int level;
-    private bool isDrag;
-    private bool isMerge;
-    private float deadTime;
+    public int level;
+    public float deadTime;
+    public bool isDragging;
+    public bool isMerging;
 
-    private GameManager gameManager;
-    private ParticleSystem particle;
+    public GameManager gameManager;
+    public ParticleSystem particle;
 
-    private Animator animator;
-    private Rigidbody2D rigidBody;
-    private CircleCollider2D circleCollider;
-    private SpriteRenderer spriteRenderer;
-
-    public int Level
-    {
-        get { return level; }
-        set { level = value; }
-    }
-
-    public float DeadTime
-    {
-        get { return deadTime; }
-        set { deadTime = value; }
-    }
-
-    public Rigidbody2D RigidBody { get { return rigidBody; } }
-    public SpriteRenderer SpriteRenderer { get { return spriteRenderer; } }
-    public GameManager GameManager { set { gameManager = value; } }
-    public ParticleSystem Particle { set { particle = value; } }
+    public Animator animator;
+    public Rigidbody2D rigidBody;
+    public CircleCollider2D circleCollider;
+    public SpriteRenderer spriteRenderer;
 
     public void Awake()
     {
@@ -50,9 +33,14 @@ public class Fruit : MonoBehaviour
         animator.SetInteger("Level", level);
     }
 
+    public void OnDisable()
+    {
+        Initialize();
+    }
+
     public void OnCollisionStay2D(Collision2D collision)
     {
-        bool isFruit = collision.gameObject.tag == "Fruit";
+        bool isFruit = collision.gameObject.CompareTag("Fruit");
         if (!isFruit) return;
 
         Fruit otherFruit = collision.gameObject.GetComponent<Fruit>();
@@ -63,7 +51,7 @@ public class Fruit : MonoBehaviour
 
     public void Move()
     {
-        if (!isDrag) return;
+        if (!isDragging) return;
 
         float mouseX = Camera.main.ScreenToWorldPoint(Input.mousePosition).x;
         mouseX = ClampToBorder(mouseX);
@@ -75,13 +63,14 @@ public class Fruit : MonoBehaviour
 
     public void Drag()
     {
-        isDrag = true;
+        isDragging = true;
     }
 
     public void Drop()
     {
-        isDrag = false;
+        isDragging = false;
         rigidBody.simulated = true;
+        SoundManager.instance.PlaySfx(SoundManager.Sfx.Drop);
     }    
 
     public void Merge(Fruit fruit)
@@ -95,11 +84,12 @@ public class Fruit : MonoBehaviour
 
         if (!isTarget) return;
 
-        fruit.isMerge = true;
+        fruit.isMerging = true;
         fruit.Hide();
 
-        isMerge = true;
+        isMerging = true;
         LevelUp();
+        transform.position = new Vector3((x+otherX)/2, y, 0);
     }
 
     public void Hide()
@@ -112,7 +102,7 @@ public class Fruit : MonoBehaviour
     IEnumerator HideCoroutine()
     {
         yield return new WaitForSeconds(0.01f);
-        isMerge = false;
+        isMerging = false;
         gameObject.SetActive(false);
     }
 
@@ -131,13 +121,14 @@ public class Fruit : MonoBehaviour
         yield return new WaitForSeconds(0.01f);
 
         animator.SetInteger("Level", level + 1);
+        SoundManager.instance.PlaySfx(SoundManager.Sfx.LevelUp);
         PlayParticle();
 
         yield return new WaitForSeconds(0.01f);
         level++;
 
         gameManager.maxLevel = Mathf.Max(level, gameManager.maxLevel);
-        isMerge = false;
+        isMerging = false;
     }
 
     public void PlayParticle()
@@ -151,7 +142,7 @@ public class Fruit : MonoBehaviour
     {
         bool isSameLevel = level == fruit.level;
         bool isBelowMaxLevel = level < gameManager.FruitMaxLevel;
-        bool isMergeable = isSameLevel && isBelowMaxLevel && !isMerge && !fruit.isMerge;
+        bool isMergeable = isSameLevel && isBelowMaxLevel && !isMerging && !fruit.isMerging;
         return isMergeable;
     }
 
@@ -170,6 +161,22 @@ public class Fruit : MonoBehaviour
         float rightLimit = 4.2f - radius;
 
         return Mathf.Clamp(x, leftLimit, rightLimit);
+    }
+
+    private void Initialize()
+    {
+        level = 0;
+        isDragging = false;
+        isMerging = false;
+
+        transform.localPosition = Vector3.zero;
+        transform.localRotation = Quaternion.identity;
+        transform.localScale = Vector3.zero;
+
+        rigidBody.simulated = false;
+        rigidBody.velocity = Vector2.zero;
+        rigidBody.angularVelocity = 0;
+        circleCollider.enabled = true;
     }
 
 }

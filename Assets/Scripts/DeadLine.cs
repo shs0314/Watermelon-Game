@@ -11,10 +11,10 @@ public class DeadLine : MonoBehaviour
         if (!isFruit) return;
 
         Fruit fruit = collision.gameObject.GetComponent<Fruit>();
-        fruit.DeadTime += Time.deltaTime;
+        fruit.deadTime += Time.deltaTime;
 
-        if (fruit.DeadTime > 2) fruit.SpriteRenderer.color = Color.red;
-        if (fruit.DeadTime > 5) gameManager.FinishGame();
+        if (fruit.deadTime > 2) fruit.spriteRenderer.color = Color.red;
+        if (fruit.deadTime > 5) gameManager.FinishGame();
     }
 
     void OnTriggerExit2D(Collider2D collision)
@@ -24,8 +24,8 @@ public class DeadLine : MonoBehaviour
 
         Fruit fruit = collision.gameObject.GetComponent<Fruit>();
 
-        fruit.DeadTime = 0;
-        fruit.SpriteRenderer.color = Color.white;
+        fruit.deadTime = 0;
+        fruit.spriteRenderer.color = Color.white;
     }
 
 }

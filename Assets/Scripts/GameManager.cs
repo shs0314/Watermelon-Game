@@ -19,12 +19,12 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        //프레임 고정
         Application.targetFrameRate = 60;
     }
 
     void Start()
     {
+        SoundManager.instance.PlayBgm();
         NextFruit();
     }
 
@@ -36,7 +36,8 @@ public class GameManager : MonoBehaviour
         GameObject instantFruitObject = Instantiate(fruitPrefab, fruitGroup);
         Fruit instantFruit = instantFruitObject.GetComponent<Fruit>();
 
-        instantFruit.Particle = instantParitlce;
+        instantFruit.particle = instantParitlce;
+        instantFruit.gameManager = this;
 
         return instantFruit;
     }
@@ -47,9 +48,9 @@ public class GameManager : MonoBehaviour
 
         Fruit newFruit = GetFruit();
         lastFruit = newFruit;
-        lastFruit.GameManager = this;
-        lastFruit.Level = Random.Range(0, 4);
+        lastFruit.level = Random.Range(0, 4);
         lastFruit.gameObject.SetActive(true);
+
         StartCoroutine(WaitNextFruit());
     }
 
@@ -74,13 +75,16 @@ public class GameManager : MonoBehaviour
     {
         Fruit[] fruits = FindObjectsOfType<Fruit>();
 
-        foreach (Fruit fruit in fruits) fruit.RigidBody.simulated = false;
+        foreach (Fruit fruit in fruits) fruit.rigidBody.simulated = false;
 
         foreach (Fruit fruit in fruits)
         {
             DeleteFruit(fruit);
             yield return new WaitForSeconds(0.1f);
         }
+
+        yield return new WaitForSeconds(0.1f);
+        SoundManager.instance.PlaySfx(SoundManager.Sfx.Finish);
     }
 
     public void TouchDown()
@@ -98,7 +102,7 @@ public class GameManager : MonoBehaviour
 
     public void addScoreByFruit(Fruit fruit)
     {
-        int level = fruit.Level;
+        int level = fruit.level;
         int point = (level + 1) * (level + 2) / 2;
         score += point;
     }
