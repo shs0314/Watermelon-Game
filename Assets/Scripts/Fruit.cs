@@ -33,11 +33,6 @@ public class Fruit : MonoBehaviour
         animator.SetInteger("Level", level);
     }
 
-    public void OnDisable()
-    {
-        Initialize();
-    }
-
     public void OnCollisionStay2D(Collision2D collision)
     {
         bool isFruit = collision.gameObject.CompareTag("Fruit");
@@ -103,7 +98,8 @@ public class Fruit : MonoBehaviour
     {
         yield return new WaitForSeconds(0.01f);
         isMerging = false;
-        gameObject.SetActive(false);
+        FruitPool.instance.Release(this);
+        EffectPool.instance.Release(particle);
     }
 
     private void LevelUp()
@@ -163,7 +159,7 @@ public class Fruit : MonoBehaviour
         return Mathf.Clamp(x, leftLimit, rightLimit);
     }
 
-    private void Initialize()
+    public void Initialize()
     {
         level = 0;
         isDragging = false;

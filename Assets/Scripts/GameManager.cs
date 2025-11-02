@@ -5,12 +5,6 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public Fruit lastFruit;
-    public GameObject fruitPrefab;
-    public Transform fruitGroup;
-
-    public GameObject particlePrefab;
-    public Transform particleGroup;
-
     public int score;
     public bool isOver;
 
@@ -27,29 +21,13 @@ public class GameManager : MonoBehaviour
         SoundManager.instance.PlayBgm();
         NextFruit();
     }
-
-    Fruit GetFruit()
-    {
-        GameObject instantParticleObject = Instantiate(particlePrefab, particleGroup);
-        ParticleSystem instantParitlce = instantParticleObject.GetComponent<ParticleSystem>();
-
-        GameObject instantFruitObject = Instantiate(fruitPrefab, fruitGroup);
-        Fruit instantFruit = instantFruitObject.GetComponent<Fruit>();
-
-        instantFruit.particle = instantParitlce;
-        instantFruit.gameManager = this;
-
-        return instantFruit;
-    }
     
     void NextFruit()
     {
         if (isOver) return;
-
-        Fruit newFruit = GetFruit();
-        lastFruit = newFruit;
-        lastFruit.level = Random.Range(0, 4);
-        lastFruit.gameObject.SetActive(true);
+        
+        lastFruit = FruitPool.instance.Get();
+        lastFruit.particle = EffectPool.instance.Get();
 
         StartCoroutine(WaitNextFruit());
     }
