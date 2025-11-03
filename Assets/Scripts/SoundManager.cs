@@ -12,14 +12,6 @@ public class SoundManager : MonoBehaviour
     public AudioClip[] sfxClips;
     private int sfxCursor;
 
-    public enum Sfx
-    {
-        LevelUp = 0,
-        Drop = 1,
-        Button = 2,
-        Finish = 3
-    }
-
     public void Awake()
     {
         instance = this;
@@ -30,6 +22,11 @@ public class SoundManager : MonoBehaviour
         bgmPlayer.Play();
     }
 
+    public void StopBgm()
+    {
+        bgmPlayer.Stop();
+    }
+
     public void PlaySfx(Sfx sfx)
     {
         sfxPlayers[sfxCursor].clip = sfxClips[(int) sfx];
@@ -37,4 +34,12 @@ public class SoundManager : MonoBehaviour
         sfxCursor = (sfxCursor + 1) % sfxPlayers.Length;
     }
     
+}
+
+public enum Sfx
+{
+    LevelUp = 0,
+    Drop = 1,
+    Button = 2,
+    Finish = 3
 }

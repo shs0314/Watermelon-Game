@@ -51,7 +51,7 @@ public class Fruit : MonoBehaviour
         float mouseX = Camera.main.ScreenToWorldPoint(Input.mousePosition).x;
         mouseX = ClampToBorder(mouseX);
 
-        Vector3 targetPosition = new Vector3(mouseX, 8f, 0f);
+        Vector3 targetPosition = new Vector3(mouseX, 5.7f, 0f);
 
         transform.position = Vector3.Lerp(transform.position, targetPosition, 0.2f);
     }
@@ -65,8 +65,8 @@ public class Fruit : MonoBehaviour
     {
         isDragging = false;
         rigidBody.simulated = true;
-        SoundManager.instance.PlaySfx(SoundManager.Sfx.Drop);
-    }    
+        SoundManager.instance.PlaySfx(Sfx.Drop);
+    }
 
     public void Merge(Fruit fruit)
     {
@@ -81,10 +81,11 @@ public class Fruit : MonoBehaviour
 
         fruit.isMerging = true;
         fruit.Hide();
+        EffectPool.instance.Release(fruit.particle);
 
         isMerging = true;
         LevelUp();
-        transform.position = new Vector3((x+otherX)/2, y, 0);
+        transform.position = new Vector3((x + otherX) / 2, y, 0);
     }
 
     public void Hide()
@@ -99,7 +100,6 @@ public class Fruit : MonoBehaviour
         yield return new WaitForSeconds(0.01f);
         isMerging = false;
         FruitPool.instance.Release(this);
-        EffectPool.instance.Release(particle);
     }
 
     private void LevelUp()
@@ -107,7 +107,7 @@ public class Fruit : MonoBehaviour
         rigidBody.velocity = Vector2.zero;
         rigidBody.angularVelocity = 0;
 
-        gameManager.addScoreByFruit(this);
+        gameManager.AddScoreByFruit(this);
 
         StartCoroutine(LevelUpCoroutine());
     }
@@ -117,7 +117,7 @@ public class Fruit : MonoBehaviour
         yield return new WaitForSeconds(0.01f);
 
         animator.SetInteger("Level", level + 1);
-        SoundManager.instance.PlaySfx(SoundManager.Sfx.LevelUp);
+        SoundManager.instance.PlaySfx(Sfx.LevelUp);
         PlayParticle();
 
         yield return new WaitForSeconds(0.01f);

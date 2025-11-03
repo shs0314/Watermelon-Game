@@ -57,7 +57,6 @@ public class EffectPool : MonoBehaviour
 
     private void OnDelete(ParticleSystem particle)
     {
-        Debug.Log("호출");
         Destroy(particle);
     }
     
