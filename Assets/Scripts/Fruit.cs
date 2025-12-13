@@ -22,7 +22,6 @@ public class Fruit : MonoBehaviour
         InitializeComponents();
     }
 
-    //FixedUpdate로 수정할 예정
     public void Update()
     {
         Move();
@@ -51,9 +50,10 @@ public class Fruit : MonoBehaviour
         float mouseX = Camera.main.ScreenToWorldPoint(Input.mousePosition).x;
         mouseX = ClampToBorder(mouseX);
 
-        Vector3 targetPosition = new Vector3(mouseX, 5.7f, 0f);
+        Vector3 targetPosition = new(mouseX, 5.1f, 0f);
 
         transform.position = Vector3.Lerp(transform.position, targetPosition, 0.2f);
+        gameManager.MoveIndicator(transform.position.x);
     }
 
     public void Drag()
@@ -123,7 +123,7 @@ public class Fruit : MonoBehaviour
         yield return new WaitForSeconds(0.01f);
         level++;
 
-        gameManager.maxLevel = Mathf.Max(level, gameManager.maxLevel);
+        gameManager.maxGameLevel = Mathf.Max(level, gameManager.maxGameLevel);
         isMerging = false;
     }
 
@@ -153,8 +153,8 @@ public class Fruit : MonoBehaviour
     private float ClampToBorder(float x)
     {
         float radius = transform.localScale.x / 2f;
-        float leftLimit = -4.2f + radius;
-        float rightLimit = 4.2f - radius;
+        float leftLimit = -5.0f + radius;
+        float rightLimit = 5.0f - radius;
 
         return Mathf.Clamp(x, leftLimit, rightLimit);
     }

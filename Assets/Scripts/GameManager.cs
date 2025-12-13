@@ -11,23 +11,22 @@ public class GameManager : MonoBehaviour
     public bool isOver;
 
     public readonly int FruitMaxLevel = 7;
-    public int maxLevel;
+    public int maxGameLevel;
 
-    [Header("[ UI ]")]
-    public TMP_Text scoreText;
-    public TMP_Text bestScoreText;
-    public TMP_Text subScoreText;
-    public GameObject endGroup;
-    public GameObject startGroup;
-
-    [Header("[ ETC ]")]
+    [Header("[ Objects ]")]
     public GameObject line;
     public GameObject bottom;
+    public GameObject indicator;
 
     public void Awake()
     {
         Application.targetFrameRate = 60;
-        bestScoreText.text = GetBestScore().ToString();
+        UIManager.instance.bestScoreText.text = GetBestScore().ToString();
+    }
+
+    public void Start()
+    {
+        StartGame();
     }
 
     public void Update()
@@ -37,18 +36,17 @@ public class GameManager : MonoBehaviour
 
     public void LateUpdate()
     {
-        scoreText.text = score.ToString();
+        UIManager.instance.scoreText.text = score.ToString();
     }
 
     public void StartGame()
     {
         InitializeGame();
-        SoundManager.instance.PlaySfx(Sfx.Button);
         SoundManager.instance.PlayBgm();
         Invoke("NextFruit", 1f);
     }
 
-    void NextFruit()
+    public void NextFruit()
     {
         if (isOver) return;
         lastFruit = FruitPool.instance.Get();
@@ -70,29 +68,29 @@ public class GameManager : MonoBehaviour
         StartCoroutine(GameOverCoroutine());
     }
 
-    IEnumerator GameOverCoroutine()
+    private IEnumerator GameOverCoroutine()
+    {
+        yield return ClearAllFruits();
+        SetBestScore(score);
+        UIManager.instance.endGroup.SetActive(true);
+        SoundManager.instance.StopBgm();
+        SoundManager.instance.PlaySfx(Sfx.Finish);
+    }
+
+    private IEnumerator ClearAllFruits()
     {
         Fruit[] fruits = FindObjectsOfType<Fruit>();
         ParticleSystem[] particles = FindObjectsOfType<ParticleSystem>();
 
         foreach (Fruit fruit in fruits) fruit.rigidBody.simulated = false;
-
         foreach (Fruit fruit in fruits)
         {
             DeleteFruit(fruit);
             yield return new WaitForSeconds(0.1f);
         }
-
-        foreach(ParticleSystem particle in particles) EffectPool.instance.Release(particle);
-
-        yield return new WaitForSeconds(0.1f);
-
-        SetBestScore(score);
-        endGroup.SetActive(true);
-        SoundManager.instance.StopBgm();
-        SoundManager.instance.PlaySfx(Sfx.Finish);
+        foreach (ParticleSystem particle in particles) EffectPool.instance.Release(particle);
     }
-
+    
     public void Reset()
     {
         SoundManager.instance.PlaySfx(Sfx.Button);
@@ -115,6 +113,7 @@ public class GameManager : MonoBehaviour
     {
         if (lastFruit == null) return;
         lastFruit.Drag();
+        indicator.SetActive(true);
     }
 
     public void TouchUp()
@@ -122,13 +121,14 @@ public class GameManager : MonoBehaviour
         if (lastFruit == null) return;
         lastFruit.Drop();
         lastFruit = null;
+        indicator.SetActive(false);
     }
-
+    
     public void SetBestScore(int score)
     {
         int bestScore = Mathf.Max(score, GetBestScore());
         PlayerPrefs.SetInt("BestScore", bestScore);
-        subScoreText.text = "점수 : " + scoreText.text;
+        UIManager.instance.subScoreText.text = "점수 : " + UIManager.instance.scoreText.text;
     }
 
     public void AddScoreByFruit(Fruit fruit)
@@ -144,13 +144,18 @@ public class GameManager : MonoBehaviour
         fruit.Hide();
     }
 
+    public void MoveIndicator(float x)
+    {
+        indicator.transform.position = new Vector3(x, -1.68f, 0);
+    }
+
     private void InitializeGame()
     {
         line.SetActive(true);
         bottom.SetActive(true);
-        scoreText.gameObject.SetActive(true);
-        bestScoreText.gameObject.SetActive(true);
-        startGroup.SetActive(false);
+        UIManager.instance.scoreText.gameObject.SetActive(true);
+        UIManager.instance.bestScoreText.gameObject.SetActive(true);
+        UIManager.instance.startGroup.SetActive(false);
     }
     
 }
