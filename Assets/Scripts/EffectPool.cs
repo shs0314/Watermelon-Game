@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Dynamic;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -8,24 +5,33 @@ public class EffectPool : MonoBehaviour
 {
     public static EffectPool instance;
 
-    private ObjectPool<ParticleSystem> pool;
     public GameObject particlePrefab;
     public Transform particleGroup;
+
+    private ObjectPool<ParticleSystem> pool;
 
     public int defaultCapacity;
     public int maxSize;
 
     public void Awake()
     {
-        if (instance != null)
+        if(instance != null)
         {
             Destroy(gameObject);
             return;
         }
 
         instance = this;
-
-        pool = new ObjectPool<ParticleSystem>(CreateParticle,OnActivate,OnRelease,OnDelete,true,defaultCapacity,maxSize);
+        
+        pool = new ObjectPool<ParticleSystem>(
+            createFunc: CreateParticle,
+            actionOnGet: OnGetParticle,
+            actionOnRelease: OnReleaseParticle, 
+            actionOnDestroy: OnDestroyParticle, 
+            collectionCheck: true, 
+            defaultCapacity: defaultCapacity, 
+            maxSize: maxSize
+        );
     }
 
     public ParticleSystem Get()
@@ -40,24 +46,24 @@ public class EffectPool : MonoBehaviour
 
     private ParticleSystem CreateParticle()
     {
-        GameObject instantParticle = Instantiate(particlePrefab, particleGroup);
-        ParticleSystem particle = instantParticle.GetComponent<ParticleSystem>();
+        GameObject instantParitcle = Instantiate(particlePrefab, particleGroup);
+        ParticleSystem particle = instantParitcle.GetComponent<ParticleSystem>();
         return particle;
     }
 
-    private void OnActivate(ParticleSystem particle)
+    private void OnGetParticle(ParticleSystem particle)
     {
         particle.gameObject.SetActive(true);
     }
 
-    private void OnRelease(ParticleSystem particle)
+    private void OnReleaseParticle(ParticleSystem particle)
     {
         particle.gameObject.SetActive(false);
     }
 
-    private void OnDelete(ParticleSystem particle)
+    private void OnDestroyParticle(ParticleSystem particle)
     {
         Destroy(particle);
     }
-    
+
 }

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -18,14 +16,23 @@ public class FruitPool : MonoBehaviour
 
     public void Awake()
     {
-        if (instance != null)
+        if(instance != null)
         {
             Destroy(gameObject);
             return;
         }
 
         instance = this;
-        pool = new ObjectPool<Fruit>(CreateFruit, OnActivate, OnRelease, OnDelete, true, defaultCapacity, maxSize);
+        
+        pool = new ObjectPool<Fruit>(
+            createFunc: CreateFruit,
+            actionOnGet: OnGetFruit,
+            actionOnRelease: OnReleaseFruit, 
+            actionOnDestroy: OnDestroyFruit, 
+            collectionCheck: true, 
+            defaultCapacity: defaultCapacity, 
+            maxSize: maxSize
+        );
     }
 
     public Fruit Get()
@@ -40,25 +47,25 @@ public class FruitPool : MonoBehaviour
 
     private Fruit CreateFruit()
     {
-        GameObject fruitInstant = Instantiate(fruitPrefab, fruitGroup);
-        Fruit fruit = fruitInstant.gameObject.GetComponent<Fruit>();
+        GameObject instantFruit = Instantiate(fruitPrefab, fruitGroup);
+        Fruit fruit = instantFruit.gameObject.GetComponent<Fruit>();
         fruit.gameManager = gameManager;
         return fruit;
     }
 
-    private void OnActivate(Fruit fruit)
+    private void OnGetFruit(Fruit fruit)
     {
-        fruit.level = Random.Range(0, 4);
+        fruit.level = Random.Range(0,4);
         fruit.gameObject.SetActive(true);
     }
 
-    private void OnRelease(Fruit fruit)
+    private void OnReleaseFruit(Fruit fruit)
     {
         fruit.gameObject.SetActive(false);
         fruit.Initialize();
     }
 
-    private void OnDelete(Fruit fruit)
+    private void OnDestroyFruit(Fruit fruit)
     {
         Destroy(fruit);
     }

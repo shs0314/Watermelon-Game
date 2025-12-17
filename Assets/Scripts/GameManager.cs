@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,10 +8,9 @@ public class GameManager : MonoBehaviour
     public int score;
     public bool isOver;
 
-    public readonly int FruitMaxLevel = 7;
-    public int maxGameLevel;
+    public readonly int FRUIT_MAX_LEVEL = 7;
+    public int gameMaxLevel;
 
-    [Header("[ Objects ]")]
     public GameObject line;
     public GameObject bottom;
     public GameObject indicator;
@@ -31,7 +28,7 @@ public class GameManager : MonoBehaviour
 
     public void Update()
     {
-        if (Input.GetButtonDown("Cancel")) Application.Quit();
+        if(Input.GetButton("Cancel")) Application.Quit();
     }
 
     public void LateUpdate()
@@ -46,26 +43,54 @@ public class GameManager : MonoBehaviour
         Invoke("NextFruit", 1f);
     }
 
+    public void FinishGame()
+    {
+        if(isOver) return;
+        isOver = true;
+        StartCoroutine(GameOverCoroutine());
+    }
+
+    public void Reset()
+    {
+        SoundManager.instance.PlaySfx(Sfx.Button);
+        StartCoroutine(ResetCoroutine());
+    }
+
+    public void TouchUp()
+    {
+        if(lastFruit == null) return;
+        lastFruit.Drop();
+        lastFruit = null;
+        indicator.SetActive(false);
+    }
+
+    public void TouchDown()
+    {
+        if(lastFruit == null) return;
+        lastFruit.Drag();
+        indicator.SetActive(true);
+    }
+
     public void NextFruit()
     {
-        if (isOver) return;
+        if(isOver) return;
         lastFruit = FruitPool.instance.Get();
         lastFruit.particle = EffectPool.instance.Get();
         StartCoroutine(WaitNextFruit());
     }
 
-    IEnumerator WaitNextFruit()
+    private IEnumerator WaitNextFruit()
     {
-        while (lastFruit != null) yield return null;
+        while(lastFruit != null) yield return null;
         yield return new WaitForSeconds(1f);
         NextFruit();
     }
 
-    public void FinishGame()
+    private void InitializeGame()
     {
-        if (isOver) return;
-        isOver = true;
-        StartCoroutine(GameOverCoroutine());
+        line.SetActive(true);
+        bottom.SetActive(true);
+        UIManager.instance.ShowScoreScreen();
     }
 
     private IEnumerator GameOverCoroutine()
@@ -79,56 +104,41 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator ClearAllFruits()
     {
-        Fruit[] fruits = FindObjectsOfType<Fruit>();
-        ParticleSystem[] particles = FindObjectsOfType<ParticleSystem>();
+        Fruit[] fruits = FindObjectsByType<Fruit>(FindObjectsSortMode.None);
+        ParticleSystem[] particles = FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None);
 
-        foreach (Fruit fruit in fruits) fruit.rigidBody.simulated = false;
-        foreach (Fruit fruit in fruits)
+        foreach(Fruit fruit in fruits) fruit.rigidBody.simulated = false;
+        foreach(Fruit fruit in fruits)
         {
-            DeleteFruit(fruit);
+            RemoveFruit(fruit);
             yield return new WaitForSeconds(0.1f);
         }
-        foreach (ParticleSystem particle in particles) EffectPool.instance.Release(particle);
-    }
-    
-    public void Reset()
-    {
-        SoundManager.instance.PlaySfx(Sfx.Button);
-        StartCoroutine(ResetCoroutine());
+        foreach(ParticleSystem particle in particles) EffectPool.instance.Release(particle);
     }
 
-    IEnumerator ResetCoroutine()
+    private IEnumerator ResetCoroutine()
     {
         yield return new WaitForSeconds(0.1f);
-        SceneManager.LoadScene("Main");
+        SceneManager.LoadScene("main");
+    }
+
+    public void RemoveFruit(Fruit fruit)
+    {
+        fruit.PlayParticle();
+        fruit.Hide();
     }
 
     public int GetBestScore()
     {
-        if (!PlayerPrefs.HasKey("BestScore")) PlayerPrefs.SetInt("BestScore", 0);
+        if(!PlayerPrefs.HasKey("BestScore")) PlayerPrefs.SetInt("BestScore", 0);
         return PlayerPrefs.GetInt("BestScore");
     }
 
-    public void TouchDown()
-    {
-        if (lastFruit == null) return;
-        lastFruit.Drag();
-        indicator.SetActive(true);
-    }
-
-    public void TouchUp()
-    {
-        if (lastFruit == null) return;
-        lastFruit.Drop();
-        lastFruit = null;
-        indicator.SetActive(false);
-    }
-    
     public void SetBestScore(int score)
     {
         int bestScore = Mathf.Max(score, GetBestScore());
         PlayerPrefs.SetInt("BestScore", bestScore);
-        UIManager.instance.subScoreText.text = "점수 : " + UIManager.instance.scoreText.text;
+        UIManager.instance.subScoreText.text = "점수 : " + score;
     }
 
     public void AddScoreByFruit(Fruit fruit)
@@ -138,24 +148,9 @@ public class GameManager : MonoBehaviour
         score += point;
     }
 
-    public void DeleteFruit(Fruit fruit)
-    {
-        fruit.PlayParticle();
-        fruit.Hide();
-    }
-
     public void MoveIndicator(float x)
     {
         indicator.transform.position = new Vector3(x, -1.68f, 0);
     }
 
-    private void InitializeGame()
-    {
-        line.SetActive(true);
-        bottom.SetActive(true);
-        UIManager.instance.scoreText.gameObject.SetActive(true);
-        UIManager.instance.bestScoreText.gameObject.SetActive(true);
-        UIManager.instance.startGroup.SetActive(false);
-    }
-    
 }
