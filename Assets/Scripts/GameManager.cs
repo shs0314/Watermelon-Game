@@ -10,9 +10,13 @@ public class GameManager : MonoBehaviour
 
     public readonly int FRUIT_MAX_LEVEL = 7;
     public int gameMaxLevel;
+    public float lastX = 0f;
 
     public GameObject line;
     public GameObject bottom;
+    public GameObject groundMask;
+    public GameObject leftWall;
+    public GameObject rightWall;
     public GameObject indicator;
 
     public void Awake()
@@ -59,6 +63,7 @@ public class GameManager : MonoBehaviour
     public void TouchUp()
     {
         if(lastFruit == null) return;
+        lastX = lastFruit.transform.position.x;
         lastFruit.Drop();
         lastFruit = null;
         indicator.SetActive(false);
@@ -76,6 +81,7 @@ public class GameManager : MonoBehaviour
         if(isOver) return;
         lastFruit = FruitPool.instance.Get();
         lastFruit.particle = EffectPool.instance.Get();
+        lastFruit.transform.position = new Vector3(lastX,5.1f,0);
         StartCoroutine(WaitNextFruit());
     }
 
@@ -90,13 +96,17 @@ public class GameManager : MonoBehaviour
     {
         line.SetActive(true);
         bottom.SetActive(true);
+        groundMask.SetActive(true);
         UIManager.instance.ShowScoreScreen();
+        MoveWallToBackground();
+        MoveBotoomToBackground();
     }
 
     private IEnumerator GameOverCoroutine()
     {
         yield return ClearAllFruits();
         SetBestScore(score);
+        groundMask.SetActive(false);
         UIManager.instance.endGroup.SetActive(true);
         SoundManager.instance.StopBgm();
         SoundManager.instance.PlaySfx(Sfx.Finish);
@@ -148,6 +158,22 @@ public class GameManager : MonoBehaviour
         score += point;
     }
 
+    public void MoveWallToBackground()
+    {
+        Vector3[] corners = UIManager.instance.GetBackgroundWorldCorners();
+        float leftCornerX = corners[1].x;
+        float rightCornerX = corners[2].x;
+        leftWall.transform.position = new Vector3(leftCornerX - 0.35f, 0, 0);
+        rightWall.transform.position = new Vector3(rightCornerX + 0.35f, 0, 0);
+    }
+
+    public void MoveBotoomToBackground()
+    {
+        float bottomCornerY = UIManager.instance.GetBackgroundWorldCorners()[0].y;
+        bottom.transform.position = new Vector3(0,bottomCornerY -2.35f,0);
+        groundMask.transform.position = new Vector3(0,bottomCornerY -2.6f,0);
+    }
+    
     public void MoveIndicator(float x)
     {
         indicator.transform.position = new Vector3(x, -1.68f, 0);
