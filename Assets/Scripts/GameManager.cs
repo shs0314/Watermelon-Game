@@ -42,8 +42,8 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        InitializeGame();
         SoundManager.instance.PlayBgm();
+        InitializeGame();
         Invoke("NextFruit", 1f);
     }
 
